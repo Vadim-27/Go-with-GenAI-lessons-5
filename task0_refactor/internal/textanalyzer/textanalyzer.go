@@ -21,7 +21,7 @@ func WordCount(text string) (int, error) {
 	if trimmed == "" {
 		return 0, fmt.Errorf("textanalyzer: word count: %w", ErrEmptyText)
 	}
-	panic("not implemented")
+	return len(strings.Fields(trimmed)), nil
 }
 
 // CharCount повертає кількість символів (рун) у text, без урахування
@@ -29,5 +29,6 @@ func WordCount(text string) (int, error) {
 //
 // TODO(Завдання 0): реалізуйте.
 func CharCount(text string) int {
-	panic("not implemented")
+	trimmed := strings.TrimSpace(text)
+	return len([]rune(trimmed))
 }

@@ -34,8 +34,24 @@ type Operation func() (string, error)
 //   - якщо всі спроби вичерпано — поверніть обгорнуту фінальну помилку,
 //     яка через errors.Is все ще розпізнається як ErrTemporary
 func Do(op Operation, maxAttempts int, backoff time.Duration) (string, error) {
-	// TODO: реалізуйте
-	panic("not implemented")
+	if maxAttempts < 1 {
+		return "", fmt.Errorf("retry: maxAttempts must be >= 1, got %d", maxAttempts)
+	}
+	var lastErr error
+	for attempt := 1; attempt <= maxAttempts; attempt++ {
+		result, err := op()
+		if err == nil {
+			return result, nil
+		}
+		if !errors.Is(err, ErrTemporary) {
+			return "", fmt.Errorf("retry: permanent error on attempt %d: %w", attempt, err)
+		}
+		lastErr = err
+		if attempt < maxAttempts {
+			time.Sleep(backoff)
+		}
+	}
+	return "", fmt.Errorf("retry: gave up after %d attempts: %w", maxAttempts, lastErr)
 }
 
 // NewFlakyOperation — допоміжна функція для тестів/демонстрації: повертає
